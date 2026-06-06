@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(*ftp_config.ini*)",
+      "Edit(*ftp_config.ini*)",
+      "Write(*ftp_config.ini*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); echo \"$cmd\" | grep -qiE 'ftp_config\\.ini' || exit 0; echo \"$cmd\" | grep -qE '^\\s*git\\s' && exit 0; printf '{\"decision\":\"block\",\"reason\":\"ftp_config.ini is protected — FTP credentials must stay private. Edit the file manually outside of Claude Code.\"}'"
+          }
+        ]
+      }
+    ]
+  }
+}
