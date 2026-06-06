@@ -16,7 +16,7 @@ sudo useradd --system --no-create-home --shell /usr/sbin/nologin mcp-ftp
 sudo mkdir -p /opt/mcp-ftp
 sudo cp "$REPO/ftp_server.py" /opt/mcp-ftp/
 sudo python3 -m venv /opt/mcp-ftp/venv
-sudo /opt/mcp-ftp/venv/bin/pip install mcp --quiet
+sudo /opt/mcp-ftp/venv/bin/pip install mcp paramiko --quiet
 sudo chown -R mcp-ftp:mcp-ftp /opt/mcp-ftp
 sudo chmod -R go-w /opt/mcp-ftp
 
