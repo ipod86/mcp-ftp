@@ -1,0 +1,29 @@
+[Unit]
+Description=mcp-ftp server (FTP access for Claude Code)
+After=network.target
+
+[Service]
+Type=simple
+User=mcp-ftp
+Group=mcp-ftp
+WorkingDirectory=/opt/mcp-ftp
+ExecStart=/opt/mcp-ftp/venv/bin/python /opt/mcp-ftp/ftp_server.py
+Restart=on-failure
+
+# --- Haertung ---
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=read-only
+ReadOnlyPaths=/opt/mcp-ftp /etc/mcp-ftp
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=yes
+LockPersonality=yes
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+[Install]
+WantedBy=multi-user.target

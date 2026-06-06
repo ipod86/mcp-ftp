@@ -8,9 +8,9 @@ from pathlib import Path
 
 from mcp.server.fastmcp import FastMCP
 
-CONFIG_PATH = Path.home() / ".config" / "mcp-ftp" / "ftp_config.ini"
+CONFIG_PATH = Path("/etc/mcp-ftp/ftp_config.ini")
 
-mcp = FastMCP("ftp")
+mcp = FastMCP("ftp", host="127.0.0.1", port=8765)
 
 
 def _load_config() -> configparser.ConfigParser:
@@ -18,8 +18,8 @@ def _load_config() -> configparser.ConfigParser:
     if not CONFIG_PATH.exists():
         raise FileNotFoundError(
             f"Config file not found: {CONFIG_PATH}\n"
-            "Run setup.sh first, then fill in your FTP credentials:\n"
-            f"  nano {CONFIG_PATH}"
+            "Ask your admin to run manual_root_setup.sh, then fill in credentials:\n"
+            f"  sudo -u mcp-ftp nano {CONFIG_PATH}"
         )
     cfg.read(CONFIG_PATH)
     return cfg
@@ -213,4 +213,4 @@ def set_permissions(server_name: str, remote_path: str, mode: str) -> str:
 
 
 if __name__ == "__main__":
-    mcp.run()
+    mcp.run(transport="sse")
