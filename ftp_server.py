@@ -17,22 +17,38 @@ def _load_config() -> configparser.ConfigParser:
     cfg = configparser.ConfigParser()
     if not CONFIG_PATH.exists():
         raise FileNotFoundError(
-            f"Config file not found: {CONFIG_PATH}\n"
-            "Copy ftp_config.ini.example to ftp_config.ini and fill in your credentials."
+            "ftp_config.ini not found — copy ftp_config.ini.example and fill in your credentials."
         )
     cfg.read(CONFIG_PATH)
     return cfg
 
 
+def _sanitize(error: Exception, server_name: str, host: str) -> str:
+    """Return an error message that never contains credentials."""
+    msg = str(error)
+    return f"Error connecting to '{server_name}' ({host}): {msg}"
+
+
 def _connect(server_name: str) -> ftplib.FTP:
     cfg = _load_config()
     if server_name not in cfg:
-        available = [s for s in cfg.sections()]
+        available = cfg.sections()
         raise ValueError(f"Server '{server_name}' not found. Available: {available}")
     s = cfg[server_name]
-    ftp = ftplib.FTP()
-    ftp.connect(s["host"], int(s.get("port", 21)))
-    ftp.login(s["username"], s["password"])
+    host = s["host"]
+    port = int(s.get("port", 21))
+    try:
+        ftp = ftplib.FTP()
+        ftp.connect(host, port, timeout=10)
+    except Exception as e:
+        raise ConnectionError(f"Cannot reach '{server_name}' ({host}:{port}): {e}") from None
+    try:
+        ftp.login(s["username"], s["password"])
+    except ftplib.error_perm:
+        ftp.close()
+        raise PermissionError(
+            f"Login to '{server_name}' ({host}:{port}) failed — check username/password in ftp_config.ini"
+        ) from None
     return ftp
 
 
