@@ -13,33 +13,33 @@ Manage files on FTP servers directly from Claude Code — upload, download, list
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/ipod86/mcp-ftp.git
-cd mcp-ftp
+git clone https://github.com/ipod86/mcp-ftp.git ~/mcp-ftp
+cd ~/mcp-ftp
 ```
 
-### 2. Install dependencies
+### 2. Run setup
 
 ```bash
-pip install -r requirements.txt
+bash setup.sh
 ```
 
-### 3. Configure FTP credentials
+This will:
+- Install Python dependencies
+- Create `~/.config/mcp-ftp/` with permissions `700`
+- Copy `ftp_config.ini.example` to `~/.config/mcp-ftp/ftp_config.ini` with permissions `600`
+- Register the MCP server in Claude Code
+
+### 3. Fill in your FTP credentials
+
+Open the config file in a **regular text editor** (not Claude Code — that is intentionally blocked):
 
 ```bash
-cp ftp_config.ini.example ftp_config.ini
+nano ~/.config/mcp-ftp/ftp_config.ini
 ```
 
-Open `ftp_config.ini` and fill in your FTP credentials (see [Configuration](#configuration) below).
+See [Configuration](#configuration) below for the format.
 
-### 4. Register the MCP server in Claude Code
-
-```bash
-claude mcp add ftp python /absolute/path/to/mcp-ftp/ftp_server.py
-```
-
-Replace `/absolute/path/to/mcp-ftp/` with the actual path where you cloned the repo.
-
-To verify it is registered:
+### 4. Verify the MCP server is running
 
 ```bash
 claude mcp list
@@ -49,7 +49,10 @@ claude mcp list
 
 ## Configuration
 
-`ftp_config.ini` uses a simple INI format. Each FTP server gets its own named block:
+The config file lives at `~/.config/mcp-ftp/ftp_config.ini` — **outside** the project folder,
+never in Git, never readable by Claude Code.
+
+Each FTP server gets its own named block:
 
 ```ini
 [mein-server]
@@ -67,15 +70,13 @@ password = passwort2
 
 To add a new server: add a blank line, a new `[name]` block, and the four fields. That's it.
 
-`ftp_config.ini` is listed in `.gitignore` and will never be committed to Git.
-
 ---
 
 ## Available tools
 
 | Tool | Description |
 |------|-------------|
-| `list_servers` | List all configured server names from `ftp_config.ini` |
+| `list_servers` | List all configured server names |
 | `list_directory` | List files and folders in a directory on a server |
 | `upload_file` | Upload a local file to the FTP server |
 | `download_file` | Download a file from the FTP server to a local path |
@@ -85,21 +86,20 @@ To add a new server: add a blank line, a new `[name]` block, and the four fields
 | `get_permissions` | Show the permissions (chmod) of a file or directory |
 | `set_permissions` | Set the permissions (chmod) of a file or directory |
 
-Every tool that accesses a server takes `server_name` as first parameter — matching a block name in `ftp_config.ini`.
+Every tool that accesses a server takes `server_name` as first parameter — matching a block name in the config.
 
 ---
 
 ## One-liner setup for Claude Code
 
-Paste this into Claude Code on any new machine to clone, install and register the server in one go:
+Paste this into Claude Code on any new machine:
 
 ```
 Install the MCP FTP server from https://github.com/ipod86/mcp-ftp:
-clone the repo to ~/mcp-ftp, run pip install -r requirements.txt,
-copy ftp_config.ini.example to ftp_config.ini,
-then register it with: claude mcp add ftp python ~/mcp-ftp/ftp_server.py
-After registration verify the server starts with: claude mcp list
-Do NOT test FTP tools — no real credentials are configured yet.
+clone the repo to ~/mcp-ftp, then run: bash ~/mcp-ftp/setup.sh
+This installs dependencies, creates ~/.config/mcp-ftp/ftp_config.ini and registers the MCP server.
+After setup verify with: claude mcp list
+Do NOT fill in or read the credentials file — the user does that manually.
 ```
 
 ---
