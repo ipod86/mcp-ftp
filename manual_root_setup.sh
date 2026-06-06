@@ -9,7 +9,9 @@ REPO="$HOME/mcp-ftp"
 echo "=== mcp-ftp: Root-Setup ==="
 
 # 1) Dedizierten Dienst-Benutzer ohne Login anlegen
-sudo useradd --system --no-create-home --shell /usr/sbin/nologin mcp-ftp
+if ! id mcp-ftp &>/dev/null; then
+    sudo useradd --system --no-create-home --shell /usr/sbin/nologin mcp-ftp
+fi
 
 # 2) Server-Code an einen geschuetzten Ort kopieren
 #    (gehoert mcp-ftp, fuer Alltagsbenutzer nicht schreibbar)
