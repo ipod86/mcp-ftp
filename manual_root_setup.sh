@@ -27,12 +27,20 @@ sudo chown -R mcp-ftp:mcp-ftp /etc/mcp-ftp
 sudo chmod 700 /etc/mcp-ftp
 sudo chmod 600 /etc/mcp-ftp/ftp_config.ini
 
-# 4) systemd-Dienst installieren und starten
+# 4) Austauschordner fuer Downloads anlegen
+sudo mkdir -p /var/lib/mcp-ftp/exchange
+sudo chown -R mcp-ftp:mcp-ftp /var/lib/mcp-ftp
+sudo chmod 770 /var/lib/mcp-ftp/exchange
+# Alltagsbenutzer der Gruppe hinzufuegen (Zugriff auf heruntergeladene Dateien)
+sudo usermod -aG mcp-ftp "$USER"
+echo "HINWEIS: Bitte einmal ab- und wieder anmelden, damit die Gruppenzugehoerigkeit aktiv wird."
+
+# 5) systemd-Dienst installieren und starten
 sudo cp "$REPO/mcp-ftp.service" /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now mcp-ftp.service
 
-# 5) Status pruefen
+# 6) Status pruefen
 echo ""
 systemctl status mcp-ftp.service --no-pager
 

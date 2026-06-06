@@ -9,6 +9,7 @@ from pathlib import Path
 from mcp.server.fastmcp import FastMCP
 
 CONFIG_PATH = Path("/etc/mcp-ftp/ftp_config.ini")
+EXCHANGE_DIR = Path("/var/lib/mcp-ftp/exchange")
 
 mcp = FastMCP("ftp", host="127.0.0.1", port=8765)
 
@@ -106,20 +107,36 @@ def upload_file(server_name: str, local_path: str, remote_path: str) -> str:
 
 
 @mcp.tool()
-def download_file(server_name: str, remote_path: str, local_path: str) -> str:
-    """Download a file from the FTP server to a local path.
+def download_file(server_name: str, remote_path: str, local_path: str = "") -> str:
+    """Download a file from the FTP server into the exchange directory.
 
     Args:
         server_name: Name of the server as defined in the config
         remote_path: Path of the file on the FTP server
-        local_path: Absolute local destination path
+        local_path: Destination path. If relative or empty, the file is placed
+                    under /var/lib/mcp-ftp/exchange/. Absolute paths must be
+                    inside /var/lib/mcp-ftp/exchange/ — any other absolute path
+                    is rejected for security reasons.
     """
+    if not local_path:
+        dest = EXCHANGE_DIR / Path(remote_path).name
+    elif not Path(local_path).is_absolute():
+        dest = EXCHANGE_DIR / local_path
+    else:
+        dest = Path(local_path)
+        try:
+            dest.relative_to(EXCHANGE_DIR)
+        except ValueError:
+            raise ValueError(
+                f"Download target must be inside {EXCHANGE_DIR}. "
+                f"Got: {local_path}"
+            )
+    dest.parent.mkdir(parents=True, exist_ok=True)
     ftp, _ = _connect(server_name)
     try:
-        os.makedirs(os.path.dirname(os.path.abspath(local_path)), exist_ok=True)
-        with open(local_path, "wb") as f:
+        with dest.open("wb") as f:
             ftp.retrbinary(f"RETR {remote_path}", f.write)
-        return f"Downloaded {remote_path} → {local_path}"
+        return f"Downloaded {remote_path} → {dest}"
     finally:
         ftp.quit()
 
