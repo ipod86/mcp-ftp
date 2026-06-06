@@ -96,8 +96,10 @@ Paste this into Claude Code on any new machine to clone, install and register th
 ```
 Install the MCP FTP server from https://github.com/ipod86/mcp-ftp:
 clone the repo to ~/mcp-ftp, run pip install -r requirements.txt,
+copy ftp_config.ini.example to ftp_config.ini,
 then register it with: claude mcp add ftp python ~/mcp-ftp/ftp_server.py
-After registration you may start and test the server.
+After registration verify the server starts with: claude mcp list
+Do NOT test FTP tools — no real credentials are configured yet.
 ```
 
 ---
